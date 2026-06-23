@@ -127,39 +127,16 @@ module DE10_LITE_Golden_Top(
 //  REG/WIRE declarations
 //=======================================================
 
-// Sinais Avalon-ST Command (top → IP)
-reg        cmd_valid;
-wire       cmd_ready;
+wire [11:0] adc_res;
 
-// Sinais Avalon-ST Response (IP → top)
-wire        resp_valid;
-wire [4:0]  resp_channel;
-wire [11:0] resp_data;
-wire        resp_startofpacket;
-wire        resp_endofpacket;
+	ADC_IP_CLK u0 (
+		.CLOCK (ADC_CLK_10), //      clk.clk
+		.RESET (KEY[0]), //    reset.reset
+		.CH0   (adc_res),   // readings.CH0
+	);
 
-// Clock PLL do ADC
-wire adc_pll_locked;
+assign LEDR[8:0] = adc_res[9:0];
 
-adc_new_ip u0 (
-    .clock_clk              (MAX10_CLK1_50),    // clock 50 MHz
-    .reset_sink_reset_n     (meu_reset),         // reset ativo-baixo
-    .adc_pll_clock_clk      (ADC_CLK_10),        // clock 10 MHz dedicado ao ADC
-    .adc_pll_locked_export  (adc_pll_locked),    // lock da PLL interna
-
-    // Canal de comando — você envia qual canal converter
-    .command_valid          (cmd_valid),
-    .command_channel        (5'd0),              // canal 0 fixo (mude se precisar)
-    .command_startofpacket  (1'b1),
-    .command_endofpacket    (1'b1),
-    .command_ready          (cmd_ready),         // IP sinaliza que aceitou
-
-    // Canal de resposta — IP devolve o resultado
-    .response_valid         (resp_valid),
-    .response_channel       (resp_channel),
-    .response_data          (resp_data),
-    .response_startofpacket (resp_startofpacket),
-    .response_endofpacket   (resp_endofpacket)
-);
-
+assign LEDR[9] = KEY[1];	
+	
 endmodule
