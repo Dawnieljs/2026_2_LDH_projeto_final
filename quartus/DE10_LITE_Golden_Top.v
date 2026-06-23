@@ -127,13 +127,39 @@ module DE10_LITE_Golden_Top(
 //  REG/WIRE declarations
 //=======================================================
 
+// Sinais Avalon-ST Command (top → IP)
+reg        cmd_valid;
+wire       cmd_ready;
 
+// Sinais Avalon-ST Response (IP → top)
+wire        resp_valid;
+wire [4:0]  resp_channel;
+wire [11:0] resp_data;
+wire        resp_startofpacket;
+wire        resp_endofpacket;
 
+// Clock PLL do ADC
+wire adc_pll_locked;
 
-//=======================================================
-//  Structural coding
-//=======================================================
+adc_new_ip u0 (
+    .clock_clk              (MAX10_CLK1_50),    // clock 50 MHz
+    .reset_sink_reset_n     (meu_reset),         // reset ativo-baixo
+    .adc_pll_clock_clk      (ADC_CLK_10),        // clock 10 MHz dedicado ao ADC
+    .adc_pll_locked_export  (adc_pll_locked),    // lock da PLL interna
 
+    // Canal de comando — você envia qual canal converter
+    .command_valid          (cmd_valid),
+    .command_channel        (5'd0),              // canal 0 fixo (mude se precisar)
+    .command_startofpacket  (1'b1),
+    .command_endofpacket    (1'b1),
+    .command_ready          (cmd_ready),         // IP sinaliza que aceitou
 
+    // Canal de resposta — IP devolve o resultado
+    .response_valid         (resp_valid),
+    .response_channel       (resp_channel),
+    .response_data          (resp_data),
+    .response_startofpacket (resp_startofpacket),
+    .response_endofpacket   (resp_endofpacket)
+);
 
 endmodule
